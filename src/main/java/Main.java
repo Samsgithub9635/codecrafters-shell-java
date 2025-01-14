@@ -6,6 +6,10 @@ public class Main {
         System.out.print("$ ");
 
         Scanner scanner = new Scanner(System.in);
+        // In this stage, you'll implement support for handling invalid commands in your shell.
+        // $ invalid_command
+        // invalid_command: command not found
         String input = scanner.nextLine();
+        System.out.println(input + ": command not found");
     }
 }
