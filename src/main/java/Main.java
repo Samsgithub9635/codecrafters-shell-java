@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -14,38 +15,39 @@ public class Main {
             
             // Read user input
             String input = scanner.nextLine();
+            String[] parts = input.split(" ");
+            String command = parts[0];
             
             // Check for the exit command
-            if (input.equals("exit 0")) {
+            if (command.equals("exit") && parts.length > 1 && parts[1].equals("0")) {
                 break;
             }
             
             // Check for the echo command
-            else if (input.startsWith("echo")) {
+            else if (command.equals("echo")) {
                 System.out.println(input.substring(5));
             }
             
             // Check for the type command
-            else if (input.startsWith("type")) {
-                String[] parts = input.split(" ");
+            else if (command.equals("type")) {
                 if (parts.length > 1) {
-                    String command = parts[1];
-                    if (builtins.contains(command)) {
-                        System.out.println(command + " is a shell builtin");
+                    String typeCommand = parts[1];
+                    if (builtins.contains(typeCommand)) {
+                        System.out.println(typeCommand + " is a shell builtin");
                     } else {
                         String path = System.getenv("PATH");
                         String[] directories = path.split(":");
                         boolean found = false;
                         for (String dir : directories) {
-                            File file = new File(dir, command);
+                            File file = new File(dir, typeCommand);
                             if (file.exists() && file.canExecute()) {
-                                System.out.println(command + " is " + file.getAbsolutePath());
+                                System.out.println(typeCommand + " is " + file.getAbsolutePath());
                                 found = true;
                                 break;
                             }
                         }
                         if (!found) {
-                            System.out.println(command + ": not found");
+                            System.out.println(typeCommand + ": not found");
                         }
                     }
                 } else {
@@ -53,9 +55,34 @@ public class Main {
                 }
             }
             
-            // Handle invalid commands
+            // Handle external programs
             else {
-                System.out.println(input + ": command not found");
+                String path = System.getenv("PATH");
+                String[] directories = path.split(":");
+                boolean found = false;
+                for (String dir : directories) {
+                    File file = new File(dir, command);
+                    if (file.exists() && file.canExecute()) {
+                        found = true;
+                        try {
+                            ProcessBuilder pb = new ProcessBuilder(parts);
+                            pb.directory(new File(System.getProperty("user.dir")));
+                            pb.redirectErrorStream(true);
+                            Process process = pb.start();
+                            Scanner processScanner = new Scanner(process.getInputStream());
+                            while (processScanner.hasNextLine()) {
+                                System.out.println(processScanner.nextLine());
+                            }
+                            process.waitFor();
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+                if (!found) {
+                    System.out.println(command + ": command not found");
+                }
             }
         }
     }
