@@ -22,7 +22,12 @@ public class Main {
               }
             
             // Handle invalid commands
-            System.out.println(input + ": command not found");
+            // System.out.println(input + ": command not found");
+            if (input.startsWith("echo")) {
+                System.out.println(input.substring(5));
+              } else {
+                System.out.println(input + ": command not found");
+            }
         }
         
         
