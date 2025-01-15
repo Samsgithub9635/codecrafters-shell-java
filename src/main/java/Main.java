@@ -7,7 +7,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         
         
-        String input, typeSubstring;
+        String typeSubstring;
         String[] commands = {"echo", "exit", "type"};
         while (true) {
             // Print the prompt
