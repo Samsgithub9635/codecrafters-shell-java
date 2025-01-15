@@ -27,7 +27,7 @@ public class Main {
             // System.out.println(input + ": command not found");
             if (input.startsWith("echo")) {
                 System.out.println(input.substring(5));
-              } 
+            } 
             else if (input.startsWith("type")) {
                 typeSubstring = input.substring(5);
                 if (Arrays.asList(commands).contains(typeSubstring)) {
