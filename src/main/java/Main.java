@@ -1,3 +1,5 @@
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -28,20 +30,38 @@ public class Main {
             if (input.startsWith("echo")) {
                 System.out.println(input.substring(5));
             } 
-            else if (input.startsWith("type")) {
-                typeSubstring = input.substring(5);
-                if (Arrays.asList(commands).contains(typeSubstring)) {
-                System.out.println(typeSubstring + " is a shell builtin");
-                }   
-                else {
-                System.out.println(typeSubstring + " not found");
+                        // Check for the type command
+                        else if (input.startsWith("type")) {
+                            String[] parts = input.split(" ");
+                            if (parts.length > 1) {
+                                String command = parts[1];
+                                if (builtins.contains(command)) {
+                                    System.out.println(command + " is a shell builtin");
+                                } else {
+                                    String path = System.getenv("PATH");
+                                    String[] directories = path.split(":");
+                                    boolean found = false;
+                                    for (String dir : directories) {
+                                        File file = new File(dir, command);
+                                        if (file.exists() && file.canExecute()) {
+                                            System.out.println(command + " is " + file.getAbsolutePath());
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found) {
+                                        System.out.println(command + ": not found");
+                                    }
+                                }
+                            } else {
+                                System.out.println("type: command not found");
+                            }
+                        }
+                        
+                        // Handle invalid commands
+                        else {
+                            System.out.println(input + ": command not found");
+                        }
+                    }
                 }
             }
-            else {
-                System.out.println(input + ": command not found");
-            }
-        }
-        
-        
-    }
-}
