@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    private static final boolean DEBUG = true; // Set to false to disable debug logs
+
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd");
@@ -15,7 +17,7 @@ public class Main {
             
             // Read user input
             String input = scanner.nextLine();
-            System.out.println("[DEBUG] Command received: " + input);
+            if (DEBUG) System.out.println("[DEBUG] Command received: " + input);
             String[] parts = input.split(" ");
             String command = parts[0];
             
@@ -37,12 +39,12 @@ public class Main {
                         System.out.println(typeCommand + " is a shell builtin");
                     } else {
                         String path = System.getenv("PATH");
-                        System.out.println("[DEBUG] PATH: " + path);
+                        if (DEBUG) System.out.println("[DEBUG] PATH: " + path);
                         String[] directories = path.split(":");
                         boolean found = false;
                         for (String dir : directories) {
                             File file = new File(dir, typeCommand);
-                            System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
+                            if (DEBUG) System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
                             if (file.exists() && file.canExecute()) {
                                 System.out.println(typeCommand + " is " + file.getAbsolutePath());
                                 found = true;
@@ -61,19 +63,19 @@ public class Main {
             // Check for the pwd command
             else if (command.equals("pwd")) {
                 String currentDir = System.getProperty("user.dir");
-                System.out.println("[DEBUG] Current working directory: " + currentDir);
+                if (DEBUG) System.out.println("[DEBUG] Current working directory: " + currentDir);
                 System.out.println(currentDir);
             }
             
             // Handle external programs
             else {
                 String path = System.getenv("PATH");
-                System.out.println("[DEBUG] PATH: " + path);
+                if (DEBUG) System.out.println("[DEBUG] PATH: " + path);
                 String[] directories = path.split(":");
                 boolean found = false;
                 for (String dir : directories) {
                     File file = new File(dir, command);
-                    System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
+                    if (DEBUG) System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
                     if (file.exists() && file.canExecute()) {
                         found = true;
                         try {
