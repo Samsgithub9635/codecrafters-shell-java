@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    private static final boolean DEBUG = true; // Set to false to disable debug logs
+    private static final boolean DEBUG = false; // Set to true to enable debug logs
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
