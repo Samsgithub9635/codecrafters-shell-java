@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -7,7 +6,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        List<String> builtins = Arrays.asList("echo", "exit", "type");
+        List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd");
         
         while (true) {
             // Print the prompt
@@ -53,6 +52,11 @@ public class Main {
                 } else {
                     System.out.println("type: command not found");
                 }
+            }
+            
+            // Check for the pwd command
+            else if (command.equals("pwd")) {
+                System.out.println(System.getProperty("user.dir"));
             }
             
             // Handle external programs
