@@ -9,6 +9,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
+        // List of built-in commands
         List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd", "cd");
         
         while (true) {
@@ -71,12 +72,22 @@ public class Main {
             else if (command.equals("cd")) {
                 if (parts.length > 1) {
                     String targetDir = parts[1];
+                    
+                    // Check for the '~' character and replace with home directory
+                    if (targetDir.equals("~")) {
+                        targetDir = System.getenv("HOME");
+                    }
+                    
                     File dir = new File(targetDir);
+                    
+                    // Handle relative paths
                     if (!dir.isAbsolute()) {
                         String currentDir = System.getProperty("user.dir");
                         dir = new File(currentDir, targetDir);
                     }
+                    
                     try {
+                        // Change the directory if it exists and is a directory
                         if (dir.exists() && dir.isDirectory()) {
                             System.setProperty("user.dir", dir.getCanonicalPath());
                         } else {
