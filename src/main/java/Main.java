@@ -21,7 +21,7 @@ public class Main {
             String input = scanner.nextLine();
             if (DEBUG) System.err.println("[DEBUG] Command received: " + input);
             
-            // Use new split method for handling quotes
+            // Use new split method for handling quotes and backslashes
             String[] parts = splitCommandLine(input);
             if (parts.length == 0) continue; // Skip if no command is entered
             String command = parts[0];
@@ -142,31 +142,39 @@ public class Main {
         }
     }
 
-    // Modified method to split command line into arguments considering single and double quotes
+    // Modified method to split command line into arguments considering quotes and backslashes
     public static String[] splitCommandLine(String commandLine) {
         List<String> tokens = new ArrayList<>();
         char[] chars = commandLine.toCharArray();
         StringBuilder token = new StringBuilder();
         boolean insideSingleQuote = false;
         boolean insideDoubleQuote = false;
+        boolean escapeNext = false;
 
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
 
-            if (c == '\'' && !insideDoubleQuote) {
-                // Toggle insideSingleQuote, but don't include the quote in the token
+            if (escapeNext) {
+                // Append the next character literally
+                token.append(c);
+                escapeNext = false;
+            } else if (c == '\\' && !insideSingleQuote) {
+                // Escape character is activated
+                escapeNext = true;
+            } else if (c == '\'' && !insideDoubleQuote) {
+                // Toggle single quote
                 insideSingleQuote = !insideSingleQuote;
             } else if (c == '\"' && !insideSingleQuote) {
-                // Toggle insideDoubleQuote, but don't include the quote in the token
+                // Toggle double quote
                 insideDoubleQuote = !insideDoubleQuote;
             } else if (c == ' ' && !insideSingleQuote && !insideDoubleQuote) {
-                // End the current token if we're not inside any quotes
+                // End the token if outside quotes
                 if (token.length() > 0) {
                     tokens.add(token.toString());
                     token.setLength(0);
                 }
             } else {
-                // Append the character to the current token
+                // Add character to token
                 token.append(c);
             }
         }
