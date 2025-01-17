@@ -91,7 +91,7 @@ public class Main {
                     
                     try {
                         // Change the directory if it exists and is a directory
-                        if (dir.exists() && dir.isDirectory()) {
+                        if (dir.exists() && isDirectory()) {
                             System.setProperty("user.dir", dir.getCanonicalPath());
                         } else {
                             System.out.println("cd: " + targetDir + ": No such file or directory");
@@ -136,7 +136,7 @@ public class Main {
                 for (String dir : directories) {
                     File file = new File(dir, command);
                     if (DEBUG) System.err.println("[DEBUG] Checking: " + file.getAbsolutePath());
-                    if (file.exists() && file.canExecute()) {
+                    if (file.exists() && canExecute()) {
                         found = true;
                         try {
                             ProcessBuilder pb = new ProcessBuilder(parts);
@@ -173,4 +173,16 @@ public class Main {
                 insideSingleQuote = !insideSingleQuote;
             } else if (c == ' ' && !insideSingleQuote) {
                 if (token.length() > 0) {
-                    tokens.add(token.toString
+                    tokens.add(token.toString());
+                    token.setLength(0);
+                }
+            } else {
+                token.append(c);
+            }
+        }
+        if (token.length() > 0) {
+            tokens.add(token.toString());
+        }
+        return tokens.toArray(new String[0]);
+    }
+}
