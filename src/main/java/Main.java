@@ -76,10 +76,14 @@ public class Main {
                         String currentDir = System.getProperty("user.dir");
                         dir = new File(currentDir, targetDir);
                     }
-                    if (dir.exists() && dir.isDirectory()) {
-                        System.setProperty("user.dir", dir.getAbsolutePath());
-                    } else {
-                        System.out.println("cd: " + targetDir + ": No such file or directory");
+                    try {
+                        if (dir.exists() && dir.isDirectory()) {
+                            System.setProperty("user.dir", dir.getCanonicalPath());
+                        } else {
+                            System.out.println("cd: " + targetDir + ": No such file or directory");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 } else {
                     System.out.println("cd: missing operand");
