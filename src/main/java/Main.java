@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    private static final boolean DEBUG = false; // Set to true to enable debug logs
+    private static final boolean DEBUG = false; // Set to false to disable debug logs
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd");
+        List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd", "cd");
         
         while (true) {
             // Print the prompt
@@ -65,6 +65,21 @@ public class Main {
                 String currentDir = System.getProperty("user.dir");
                 if (DEBUG) System.err.println("[DEBUG] Current working directory: " + currentDir);
                 System.out.println(currentDir);
+            }
+            
+            // Check for the cd command
+            else if (command.equals("cd")) {
+                if (parts.length > 1) {
+                    String targetDir = parts[1];
+                    File dir = new File(targetDir);
+                    if (dir.exists() && dir.isDirectory()) {
+                        System.setProperty("user.dir", dir.getAbsolutePath());
+                    } else {
+                        System.out.println("cd: " + targetDir + ": No such file or directory");
+                    }
+                } else {
+                    System.out.println("cd: missing operand");
+                }
             }
             
             // Handle external programs
