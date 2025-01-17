@@ -91,7 +91,7 @@ public class Main {
                     
                     try {
                         // Change the directory if it exists and is a directory
-                        if (dir.exists() && isDirectory()) {
+                        if (dir.exists() && dir.isDirectory()) {
                             System.setProperty("user.dir", dir.getCanonicalPath());
                         } else {
                             System.out.println("cd: " + targetDir + ": No such file or directory");
@@ -136,7 +136,7 @@ public class Main {
                 for (String dir : directories) {
                     File file = new File(dir, command);
                     if (DEBUG) System.err.println("[DEBUG] Checking: " + file.getAbsolutePath());
-                    if (file.exists() && canExecute()) {
+                    if (file.exists() && file.canExecute()) {
                         found = true;
                         try {
                             ProcessBuilder pb = new ProcessBuilder(parts);
