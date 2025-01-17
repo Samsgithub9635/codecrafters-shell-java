@@ -72,6 +72,10 @@ public class Main {
                 if (parts.length > 1) {
                     String targetDir = parts[1];
                     File dir = new File(targetDir);
+                    if (!dir.isAbsolute()) {
+                        String currentDir = System.getProperty("user.dir");
+                        dir = new File(currentDir, targetDir);
+                    }
                     if (dir.exists() && dir.isDirectory()) {
                         System.setProperty("user.dir", dir.getAbsolutePath());
                     } else {
