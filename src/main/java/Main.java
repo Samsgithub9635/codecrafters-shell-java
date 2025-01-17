@@ -23,6 +23,7 @@ public class Main {
             
             // Use new split method for handling quotes
             String[] parts = splitCommandLine(input);
+            if (parts.length == 0) continue; // Skip if no command is entered
             String command = parts[0];
             
             // Check for the exit command
@@ -32,7 +33,10 @@ public class Main {
             
             // Check for the echo command
             else if (command.equals("echo")) {
-                System.out.println(input.substring(5));
+                if (parts.length > 1) {
+                    // Print everything after "echo"
+                    System.out.println(String.join(" ", Arrays.copyOfRange(parts, 1, parts.length)));
+                }
             }
             
             // Check for the type command
@@ -104,29 +108,6 @@ public class Main {
                 }
             }
             
-            // Check for the cat command
-            else if (command.equals("cat")) {
-                for (int i = 1; i < parts.length; i++) {
-                    File file = new File(parts[i]);
-                    if (file.exists()) {
-                        try {
-                            Scanner fileScanner = new Scanner(file);
-                            while (fileScanner.hasNextLine()) {
-                                System.out.print(fileScanner.nextLine());
-                                if (i < parts.length - 1) {
-                                    System.out.print(" ");
-                                }
-                            }
-                            fileScanner.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        System.out.println("cat: " + parts[i] + ": No such file or directory");
-                    }
-                }
-            }
-            
             // Handle external programs
             else {
                 String path = System.getenv("PATH");
@@ -161,7 +142,7 @@ public class Main {
         }
     }
 
-    // Method to split command line into arguments considering single quotes
+    // Modified method to split command line into arguments considering single quotes
     public static String[] splitCommandLine(String commandLine) {
         List<String> tokens = new ArrayList<>();
         char[] chars = commandLine.toCharArray();
@@ -170,13 +151,16 @@ public class Main {
 
         for (char c : chars) {
             if (c == '\'') {
+                // Toggle insideSingleQuote, but don't include the quote in the token
                 insideSingleQuote = !insideSingleQuote;
             } else if (c == ' ' && !insideSingleQuote) {
+                // End the current token if we're not inside quotes
                 if (token.length() > 0) {
                     tokens.add(token.toString());
                     token.setLength(0);
                 }
             } else {
+                // Append the character to the current token
                 token.append(c);
             }
         }
