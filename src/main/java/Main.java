@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -19,7 +20,9 @@ public class Main {
             // Read user input
             String input = scanner.nextLine();
             if (DEBUG) System.err.println("[DEBUG] Command received: " + input);
-            String[] parts = input.split(" ");
+            
+            // Use new split method for handling quotes
+            String[] parts = splitCommandLine(input);
             String command = parts[0];
             
             // Check for the exit command
@@ -101,6 +104,29 @@ public class Main {
                 }
             }
             
+            // Check for the cat command
+            else if (command.equals("cat")) {
+                for (int i = 1; i < parts.length; i++) {
+                    File file = new File(parts[i]);
+                    if (file.exists()) {
+                        try {
+                            Scanner fileScanner = new Scanner(file);
+                            while (fileScanner.hasNextLine()) {
+                                System.out.print(fileScanner.nextLine());
+                                if (i < parts.length - 1) {
+                                    System.out.print(" ");
+                                }
+                            }
+                            fileScanner.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("cat: " + parts[i] + ": No such file or directory");
+                    }
+                }
+            }
+            
             // Handle external programs
             else {
                 String path = System.getenv("PATH");
@@ -134,4 +160,17 @@ public class Main {
             }
         }
     }
-}
+
+    // Method to split command line into arguments considering single quotes
+    public static String[] splitCommandLine(String commandLine) {
+        List<String> tokens = new ArrayList<>();
+        char[] chars = commandLine.toCharArray();
+        StringBuilder token = new StringBuilder();
+        boolean insideSingleQuote = false;
+
+        for (char c : chars) {
+            if (c == '\'') {
+                insideSingleQuote = !insideSingleQuote;
+            } else if (c == ' ' && !insideSingleQuote) {
+                if (token.length() > 0) {
+                    tokens.add(token.toString
