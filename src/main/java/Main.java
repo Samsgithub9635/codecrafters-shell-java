@@ -1,104 +1,133 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
+    private static final boolean DEBUG = true; // Set to false to disable debug logs
 
-    public static void main(String[] args) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            // Print the prompt before starting the input loop
+    public static void main(String[] args) throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd");
+        
+        while (true) {
+            // Print the prompt
             System.out.print("$ ");
             
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                List<String> tokens = parseCommand(line);
-                if (tokens.isEmpty()) {
-                    continue;
-                }
-
-                String command = tokens.get(0);
-                List<String> arguments = tokens.subList(1, tokens.size());
-
-                if (command.equals("exit")) {
-                    break;
-                }
-
-                executeCommand(command, arguments);
-
-                // Print the prompt again after executing the command
-                System.out.print("$ ");
+            // Read user input
+            String input = scanner.nextLine();
+            if (DEBUG) System.out.println("[DEBUG] Command received: " + input);
+            String[] parts = splitCommand(input);
+            String command = parts[0];
+            
+            // Check for the exit command
+            if (command.equals("exit") && parts.length > 1 && parts[1].equals("0")) {
+                break;
             }
-        } catch (Exception e) {
-            System.err.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
+            
+            // Check for the echo command
+            else if (command.equals("echo")) {
+                System.out.println(input.substring(5));
+            }
+            
+            // Check for the type command
+            else if (command.equals("type")) {
+                if (parts.length > 1) {
+                    String typeCommand = parts[1];
+                    if (builtins.contains(typeCommand)) {
+                        System.out.println(typeCommand + " is a shell builtin");
+                    } else {
+                        String path = System.getenv("PATH");
+                        if (DEBUG) System.out.println("[DEBUG] PATH: " + path);
+                        String[] directories = path.split(":");
+                        boolean found = false;
+                        for (String dir : directories) {
+                            File file = new File(dir, typeCommand);
+                            if (DEBUG) System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
+                            if (file.exists() && file.canExecute()) {
+                                System.out.println(typeCommand + " is " + file.getAbsolutePath());
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            System.out.println(typeCommand + ": not found");
+                        }
+                    }
+                } else {
+                    System.out.println("type: command not found");
+                }
+            }
+            
+            // Check for the pwd command
+            else if (command.equals("pwd")) {
+                String currentDir = System.getProperty("user.dir");
+                if (DEBUG) System.out.println("[DEBUG] Current working directory: " + currentDir);
+                System.out.println(currentDir);
+            }
+            
+            // Handle external programs
+            else {
+                String path = System.getenv("PATH");
+                if (DEBUG) System.out.println("[DEBUG] PATH: " + path);
+                String[] directories = path.split(":");
+                boolean found = false;
+                for (String dir : directories) {
+                    File file = new File(dir, command);
+                    if (DEBUG) System.out.println("[DEBUG] Checking: " + file.getAbsolutePath());
+                    if (file.exists() && file.canExecute()) {
+                        found = true;
+                        try {
+                            ProcessBuilder pb = new ProcessBuilder(parts);
+                            pb.directory(new File(System.getProperty("user.dir")));
+                            pb.redirectErrorStream(true);
+                            Process process = pb.start();
+                            Scanner processScanner = new Scanner(process.getInputStream());
+                            while (processScanner.hasNextLine()) {
+                                System.out.println(processScanner.nextLine());
+                            }
+                            process.waitFor();
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+                if (!found) {
+                    System.out.println(command + ": command not found");
+                }
+            }
         }
     }
-
-    private static List<String> parseCommand(String line) {
-        List<String> tokens = new ArrayList<>();
-        StringBuilder currentToken = new StringBuilder();
-        boolean inSingleQuotes = false;
-        boolean inDoubleQuotes = false;
-
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-
-            if (c == '\\' && i + 1 < line.length()) {
-                char nextChar = line.charAt(i + 1);
-                currentToken.append(nextChar);
-                i++; // Skip the next character as it's escaped
-            } else if (c == '\'') {
-                inSingleQuotes = !inSingleQuotes;
+    
+    private static String[] splitCommand(String input) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+        boolean escape = false;
+        
+        for (char c : input.toCharArray()) {
+            if (escape) {
+                current.append(c);
+                escape = false;
+            } else if (c == '\\') {
+                escape = true;
             } else if (c == '"') {
-                inDoubleQuotes = !inDoubleQuotes;
-            } else if (Character.isWhitespace(c) && !inSingleQuotes && !inDoubleQuotes) {
-                if (currentToken.length() > 0) {
-                    tokens.add(currentToken.toString());
-                    currentToken.setLength(0);
+                inQuotes = !inQuotes;
+                current.append(c);
+            } else if (c == ' ' && !inQuotes) {
+                if (current.length() > 0) {
+                    parts.add(current.toString());
+                    current.setLength(0);
                 }
             } else {
-                currentToken.append(c);
+                current.append(c);
             }
         }
-
-        if (currentToken.length() > 0) {
-            tokens.add(currentToken.toString());
+        if (current.length() > 0) {
+            parts.add(current.toString());
         }
-
-        return tokens;
-    }
-
-    private static void executeCommand(String command, List<String> arguments) {
-        try {
-            List<String> commandWithArgs = new ArrayList<>();
-            commandWithArgs.add(command);
-            commandWithArgs.addAll(arguments);
-
-            ProcessBuilder processBuilder = new ProcessBuilder(commandWithArgs);
-            processBuilder.directory(new File(System.getProperty("user.dir")));
-            processBuilder.redirectErrorStream(true);
-
-            Process process = processBuilder.start();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                System.err.println("Command exited with code " + exitCode);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to execute command: " + e.getMessage());
-        }
+        return parts.toArray(new String[0]);
     }
 }
