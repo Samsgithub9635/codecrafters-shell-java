@@ -8,6 +8,9 @@ public class Main {
 
     public static void main(String[] args) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            // Print the prompt before starting the input loop
+            System.out.print("$ ");
+            
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -29,7 +32,7 @@ public class Main {
 
                 executeCommand(command, arguments);
 
-                // Print the prompt after executing the command
+                // Print the prompt again after executing the command
                 System.out.print("$ ");
             }
         } catch (Exception e) {
