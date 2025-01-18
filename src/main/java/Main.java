@@ -28,6 +28,9 @@ public class Main {
                 }
 
                 executeCommand(command, arguments);
+
+                // Print the prompt after executing the command
+                System.out.print("$ ");
             }
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());
