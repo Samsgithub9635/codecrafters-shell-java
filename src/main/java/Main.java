@@ -112,10 +112,10 @@ public class Main {
         boolean inDoubleQuotes = false;
         boolean escapeNext = false;
         List<String> tokens = new ArrayList<>();
-
+    
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
-
+    
             if (escapeNext) {
                 // Handle escape character, add the next character literally
                 currentToken.append(c);
@@ -139,12 +139,12 @@ public class Main {
                 currentToken.append(c);
             }
         }
-
+    
         // Add the last token if exists
         if (currentToken.length() > 0) {
             tokens.add(currentToken.toString());
         }
-
+    
         return tokens.toArray(new String[0]);
     }
-}
+}    
