@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Main {
     private static final boolean DEBUG = false; // Set to true for debug logs
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         List<String> builtins = Arrays.asList("echo", "exit", "type", "pwd", "cd", "cat");
 
@@ -108,10 +108,14 @@ public class Main {
         }
     }
 
-    // Handles the 'cat' command
+    // Handles the 'cat' command with proper backslash handling
     private static void handleCat(String[] parts) {
         for (int i = 1; i < parts.length; i++) {
-            File file = new File(parts[i]);
+            String filePath = parts[i].replace("\\\\", "\\") // Handle escaped backslashes
+                                       .replace("\\n", "\n") // Replace \n with newline
+                                       .replace("\\t", "\t") // Replace \t with tab
+                                       .replace("\\'", "'"); // Handle escaped single quote
+            File file = new File(filePath);
             if (file.exists()) {
                 try (Scanner fileScanner = new Scanner(file)) {
                     while (fileScanner.hasNextLine()) {
@@ -121,7 +125,7 @@ public class Main {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("cat: " + parts[i] + ": No such file or directory");
+                System.out.println("cat: " + filePath + ": No such file or directory");
             }
         }
     }
